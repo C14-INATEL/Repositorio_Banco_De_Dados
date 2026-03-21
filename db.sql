@@ -26,6 +26,18 @@ CREATE TABLE lojas (
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
 );
 
+-- ENTREGAS
+CREATE TABLE entregas (
+   id INT AUTO_INCREMENT PRIMARY KEY,
+   descricao VARCHAR(255),
+   regiao VARCHAR(50),
+   status INT DEFAULT 1,
+   data_pedido TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+   data_entrega TIMESTAMP NULL,
+   loja_id INT,
+   FOREIGN KEY (loja_id) REFERENCES lojas(id)
+);
+
 -- USUARIOS
 INSERT INTO usuarios (nome, email, senha, tipo) VALUES
 ('Administrador', 'admin@email.com', '123456', 'admin'),
@@ -41,3 +53,29 @@ INSERT INTO lojas (nome, endereco, telefone, usuario_id) VALUES
 
 -- TESTE USUARIOS
 SELECT id, nome, email, tipo FROM usuarios;
+
+-- PEDIDOS
+INSERT INTO entregas (descricao, regiao, loja_id) VALUES
+('Pedido Loja A', 'Sul', 1),
+('Pedido Loja B', 'Sudeste', 2);
+
+-- ATUALIZA STATUS
+UPDATE entregas SET status = 2 WHERE id = 1;
+UPDATE entregas SET status = 3 WHERE id = 1;
+UPDATE entregas SET status = 4, data_entrega = CURRENT_TIMESTAMP WHERE id = 2;
+
+-- TESTE ENTREGAS
+SELECT
+e.id AS pedido_id,
+   l.nome AS loja,
+   e.regiao,
+   CASE
+       WHEN e.status = 1 THEN 'Criado'
+       WHEN e.status = 2 THEN 'Em andamento'
+       WHEN e.status = 3 THEN 'Enviado'
+       WHEN e.status = 4 THEN 'Entregue'
+   END AS status,
+   e.data_pedido,
+   e.data_entrega
+FROM entregas e
+JOIN lojas l ON e.loja_id = l.id;
