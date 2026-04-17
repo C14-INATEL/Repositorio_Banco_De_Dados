@@ -38,21 +38,21 @@ CREATE TABLE entregas (
    FOREIGN KEY (loja_id) REFERENCES lojas(id)
 );
 
--- USUARIOS
-INSERT INTO usuarios (nome, email, senha, tipo) VALUES
-('Administrador', 'admin@email.com', '123456', 'admin'),
-('Operador 1', 'op1@email.com', '123456', 'operador'),
-('Operador 2', 'op2@email.com', '123456', 'operador'),
-('Loja A', 'A@email.com', '123456', 'lojista'),
-('Loja B', 'B@email.com', '123456', 'lojista');
+-- USUARIOS (comentado: fluxo de cadastro já funciona pela aplicação)
+-- INSERT INTO usuarios (nome, email, senha, tipo) VALUES
+-- ('Administrador', 'admin@email.com', '123456', 'admin'),
+-- ('Operador 1', 'op1@email.com', '123456', 'operador'),
+-- ('Operador 2', 'op2@email.com', '123456', 'operador'),
+-- ('Loja A', 'A@email.com', '123456', 'lojista'),
+-- ('Loja B', 'B@email.com', '123456', 'lojista');
 
--- LOJAS
-INSERT INTO lojas (nome, endereco, telefone, usuario_id) VALUES
-('Loja A', 'Rua ABC, 100', '111111111', 4),
-('Loja B', 'Rua DEF, 200', '222222222', 5);
+-- LOJAS (comentado: fluxo de cadastro já funciona pela aplicação)
+-- INSERT INTO lojas (nome, endereco, telefone, usuario_id) VALUES
+-- ('Loja A', 'Rua ABC, 100', '111111111', 4),
+-- ('Loja B', 'Rua DEF, 200', '222222222', 5);
 
 -- TESTE USUARIOS
-SELECT id, nome, email, tipo FROM usuarios;
+-- SELECT id, nome, email, tipo FROM usuarios;
 
 -- PEDIDOS
 INSERT INTO entregas (descricao, regiao, loja_id) VALUES
