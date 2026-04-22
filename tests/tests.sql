@@ -1,34 +1,103 @@
--- TESTES DE INTEGRIDADE
+-- INÍCIO DO TESTE (ISOLADO)
+START TRANSACTION;
 
--- 5. TESTE USUARIO_ID INEXISTENTE
+-- MOCKS
+DELETE FROM entregas;
+DELETE FROM lojas;
+DELETE FROM usuarios;
+
+-- garante regiões
+INSERT IGNORE INTO regioes (id, nome, custo_base) VALUES
+(1, 'Sul', 20.00),
+(2, 'Sudeste', 25.00);
+
+-- USUÁRIOS
+INSERT INTO usuarios (id, nome, email, senha, tipo) VALUES
+(1, 'Admin', 'admin@email.com', '123456', 'admin'),
+(2, 'Loja', 'loja@email.com', '123456', 'lojista');
+
+-- LOJA
+INSERT INTO lojas (id, nome, endereco, telefone, usuario_id) VALUES
+(1, 'Loja A', 'Rua A', '111111111', 2);
+
+-- ENTREGA
+INSERT INTO entregas (id, descricao, loja_id, regiao_id, prioridade, custo) VALUES
+(1, 'Pedido Teste', 1, 1, 'media', 20.00);
+
+
+-- TESTES
+
+-- TESTE: FK usuário inexistente (deve falhar)
 INSERT INTO lojas (nome, endereco, telefone, usuario_id)
-VALUES ('Loja Teste', 'Rua X', '999999999', 999);
+VALUES ('Loja Inválida', 'Rua X', '999999999', 999);
 
--- 6. TESTE LOJA_ID INEXISTENTE
+-- TESTE: FK loja inexistente (deve falhar)
 INSERT INTO entregas (descricao, loja_id, regiao_id)
 VALUES ('Pedido inválido', 999, 1);
 
-
--- TESTES DE REGRAS DE NEGÓCIO
-
--- 7. INSERÇÃO SEM STATUS (DEVE USAR DEFAULT)
+-- TESTE: status default
 INSERT INTO entregas (descricao, loja_id, regiao_id)
-VALUES ('Teste Status Default', 1, 1);
+VALUES ('Teste Default', 1, 1);
 
--- VERIFICA STATUS DEFAULT
 SELECT status 
 FROM entregas
-WHERE descricao = 'Teste Status Default';
+WHERE descricao = 'Teste Default';
 
+-- TESTE: atualização completa
+UPDATE entregas
+SET descricao = 'Pedido Atualizado', prioridade = 'alta'
+WHERE id = 1;
 
--- TESTES DE ATUALIZAÇÃO
+SELECT descricao, prioridade FROM entregas WHERE id = 1;
 
--- 8. ATUALIZA PARA ENTREGUE
+-- TESTE: marcar como entregue
 UPDATE entregas
 SET status = 'entregue', data_entrega = CURRENT_TIMESTAMP
 WHERE id = 1;
 
--- VERIFICA DATA ENTREGA
 SELECT status, data_entrega
 FROM entregas
 WHERE id = 1;
+
+-- TESTE: inconsistência (não deveria permitir)
+UPDATE entregas
+SET status = 'entregue', data_entrega = NULL
+WHERE id = 1;
+
+SELECT * FROM entregas
+WHERE status = 'entregue' AND data_entrega IS NULL;
+
+-- TESTE: cancelamento
+UPDATE entregas
+SET status = 'cancelado'
+WHERE id = 1;
+
+SELECT status FROM entregas WHERE id = 1;
+
+-- TESTE: prioridade urgente
+UPDATE entregas SET prioridade = 'urgente' WHERE id = 1;
+
+SELECT * FROM entregas WHERE prioridade = 'urgente';
+
+-- TESTE: ordenação correta por prioridade
+SELECT id, prioridade
+FROM entregas
+ORDER BY 
+CASE prioridade
+    WHEN 'urgente' THEN 1
+    WHEN 'alta' THEN 2
+    WHEN 'media' THEN 3
+    WHEN 'baixa' THEN 4
+END;
+
+-- TESTE: agrupamento por região
+SELECT 
+    r.nome,
+    COUNT(*) AS total,
+    SUM(e.custo) AS custo_total
+FROM entregas e
+JOIN regioes r ON e.regiao_id = r.id
+GROUP BY r.nome;
+
+
+ROLLBACK;
