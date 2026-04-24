@@ -1,24 +1,54 @@
--- TESTES DE USUÁRIOS
+START TRANSACTION;
+ 
+DELETE FROM entregas;
+DELETE FROM lojas;
+DELETE FROM usuarios;
+ 
+-- garante região mínima
+INSERT IGNORE INTO regioes (id, nome, custo_base)
+VALUES (1, 'Sul', 20.00);
+ 
+-- USUÁRIOS
+INSERT INTO usuarios (id, nome, email, senha, tipo) VALUES
+(1, 'Admin', 'admin@email.com', '123456', 'admin'),
+(2, 'Operador', 'op@email.com', '123456', 'operador'),
+(3, 'Loja User', 'loja@email.com', '123456', 'lojista');
+ 
+-- LOJA
+INSERT INTO lojas (id, nome, endereco, telefone, usuario_id) VALUES
+(1, 'Loja A', 'Rua A', '111111111', 3);
+ 
+-- ENTREGA
+INSERT INTO entregas (id, descricao, loja_id, regiao_id, prioridade, custo, status) VALUES
+(1, 'Pedido 1', 1, 1, 'media', 20.00, 'criado');
+ 
 
--- 1. TESTE EMAIL DUPLICADO
+-- TESTE: email duplicado (deve falhar)
 INSERT INTO usuarios (nome, email, senha, tipo)
 VALUES ('Teste', 'admin@email.com', '123456', 'admin');
-
--- 2. TESTE NOME NULL
+ 
+-- TESTE: nome NULL (deve falhar)
 INSERT INTO usuarios (nome, email, senha, tipo)
 VALUES (NULL, 'teste@email.com', '123456', 'admin');
-
-
--- TESTES DE CONSULTA
-
--- 3. VER STATUS (AGORA TEXTO)
-SELECT 
-    id,
-    status
-FROM entregas;
-
--- 4. VERIFICAR SE ENTREGAS POSSUEM LOJA VÁLIDA
+ 
+-- TESTE: verificar status (modelo novo)
+SELECT id, status FROM entregas;
+ 
+-- TESTE: verificar entregas sem loja válida
 SELECT e.id
 FROM entregas e
 LEFT JOIN lojas l ON e.loja_id = l.id
 WHERE l.id IS NULL;
+ 
+-- TESTE: busca real (filtro)
+SELECT *
+FROM entregas
+WHERE status = 'criado' AND prioridade = 'media';
+ 
+-- TESTE: consistência de região
+SELECT e.id
+FROM entregas e
+LEFT JOIN regioes r ON e.regiao_id = r.id
+WHERE r.id IS NULL;
+ 
+ROLLBACK;
