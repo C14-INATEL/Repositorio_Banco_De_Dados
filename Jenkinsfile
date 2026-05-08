@@ -34,20 +34,14 @@ pipeline {
 
         stage('Criar estrutura do banco') {
             steps {
-                sh 'docker exec -i mysql-test mysql -uroot -proot --connect-expired-password sistema_entregas < db.sql'
+                sh 'docker exec -i mysql-test mysql -h 127.0.0.1 -uroot -proot sistema_entregas < db.sql'
             }
         }
 
         stage('Rodar testes SQL') {
             steps {
-                sh 'docker exec -i mysql-test mysql -uroot -proot sistema_entregas < tests/tests.sql || true'
-                sh 'docker exec -i mysql-test mysql -uroot -proot sistema_entregas < tests/Testes.sql || true'
-            }
-        }
-
-        stage('Instalar dependências') {
-            steps {
-                sh 'npm install'
+                sh 'docker exec -i mysql-test mysql -h 127.0.0.1 -uroot -proot sistema_entregas < tests/tests.sql || true'
+                sh 'docker exec -i mysql-test mysql -h 127.0.0.1 -uroot -proot sistema_entregas < tests/Testes.sql || true'
             }
         }
 
