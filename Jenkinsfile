@@ -23,17 +23,18 @@ pipeline {
                     docker run -d --name mysql-test \
                         -e MYSQL_ROOT_PASSWORD=root \
                         -e MYSQL_DATABASE=sistema_entregas \
+                        -e MYSQL_ROOT_HOST=% \
                         -p 3307:3306 \
-                        mysql:8.0
+                        mysql:8.0 --default-authentication-plugin=mysql_native_password
                     echo "Aguardando MySQL iniciar..."
-                    sleep 20
+                    sleep 40
                 '''
             }
         }
 
         stage('Criar estrutura do banco') {
             steps {
-                sh 'docker exec -i mysql-test mysql -uroot -proot sistema_entregas < db.sql'
+                sh 'docker exec -i mysql-test mysql -uroot -proot --connect-expired-password sistema_entregas < db.sql'
             }
         }
 
