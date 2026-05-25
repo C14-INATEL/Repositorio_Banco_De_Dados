@@ -15,13 +15,6 @@ CREATE TABLE regioes (
     custo_base DECIMAL(10,2) NOT NULL
 );
 
-INSERT INTO regioes (nome, custo_base) VALUES
-('Sul', 20.00),
-('Sudeste', 25.00),
-('Centro-Oeste', 30.00),
-('Nordeste', 35.00),
-('Norte', 40.00);
-
 
 -- USUÁRIOS
 CREATE TABLE usuarios (
