@@ -50,6 +50,19 @@ pipeline {
                 sh 'node --check popular_banco.js && echo "✅ popular_banco.js válido"'
             }
         }
+
+        stage('Instalar dependências') {
+            steps {
+                sh 'npm ci --only=production'
+                sh 'npm ci --save-dev jest@^29.7.0'
+            }
+        }
+
+        stage('Rodar testes unitários com Jest') {
+            steps {
+                sh 'npm test -- --runInBand --forceExit'
+            }
+        }
     }
 
     post {
