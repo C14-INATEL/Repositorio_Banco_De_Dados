@@ -64,6 +64,11 @@ UPDATE entregas
 SET status = 'entregue', data_entrega = NULL
 WHERE id = 1;
 
+-- TESTE: atualização para email já existente
+UPDATE usuarios
+SET email = 'admin@email.com'
+WHERE id = 2;
+
 SELECT * FROM entregas
 WHERE status = 'entregue' AND data_entrega IS NULL;
 
@@ -99,5 +104,31 @@ FROM entregas e
 JOIN regioes r ON e.regiao_id = r.id
 GROUP BY r.nome;
 
+-- TESTE: custo abaixo do custo base da região
+SELECT *
+FROM entregas e
+JOIN regioes r ON e.regiao_id = r.id
+WHERE e.custo < r.custo_base;
+
+-- TESTE: análise de busca por status
+EXPLAIN SELECT *
+FROM entregas
+WHERE status = 'criado';
+
+-- TESTE: data automática de criação
+INSERT INTO entregas (descricao, loja_id, regiao_id)
+VALUES ('Entrega Timestamp', 1, 1);
+
+SELECT data_criacao
+FROM entregas
+WHERE descricao = 'Entrega Timestamp';
+
+-- TESTE: exclusão de usuário e impacto nas lojas
+DELETE FROM usuarios
+WHERE id = 2;
+
+SELECT *
+FROM lojas
+WHERE usuario_id = 2;
 
 ROLLBACK;

@@ -30,6 +30,10 @@ VALUES ('Teste', 'admin@email.com', '123456', 'admin');
 -- TESTE: nome NULL (deve falhar)
 INSERT INTO usuarios (nome, email, senha, tipo)
 VALUES (NULL, 'teste@email.com', '123456', 'admin');
+
+-- TESTE: tipo inválido de usuário
+INSERT INTO usuarios (nome, email, senha, tipo)
+VALUES ('Teste', 'teste@email.com', '123456', 'gerente');
  
 -- TESTE: verificar status (modelo novo)
 SELECT id, status FROM entregas;
@@ -39,6 +43,10 @@ SELECT e.id
 FROM entregas e
 LEFT JOIN lojas l ON e.loja_id = l.id
 WHERE l.id IS NULL;
+
+-- TESTE: entrega sem descrição
+INSERT INTO entregas (descricao, loja_id, regiao_id)
+VALUES (NULL, 1, 1);
  
 -- TESTE: busca real (filtro)
 SELECT *
@@ -50,5 +58,14 @@ SELECT e.id
 FROM entregas e
 LEFT JOIN regioes r ON e.regiao_id = r.id
 WHERE r.id IS NULL;
+
+-- TESTE: impedir custo negativo
+INSERT INTO entregas (descricao, loja_id, regiao_id, prioridade, custo)
+VALUES ('Entrega inválida', 1, 1, 'media', -10.00);
+
+-- TESTE: prioridade inválida
+INSERT INTO entregas (descricao, loja_id, regiao_id, prioridade)
+VALUES ('Teste', 1, 1, 'super-alta');
+
  
 ROLLBACK;
