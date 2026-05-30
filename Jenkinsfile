@@ -27,7 +27,7 @@ pipeline {
                         -p 3307:3306 \
                         mysql:8.0 --default-authentication-plugin=mysql_native_password
                     echo "Aguardando MySQL iniciar..."
-                    sleep 40
+                    sleep 60
                 '''
             }
         }
