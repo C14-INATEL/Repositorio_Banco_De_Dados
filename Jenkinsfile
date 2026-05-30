@@ -47,20 +47,27 @@ pipeline {
 
         stage('Validar popular_banco.js') {
             steps {
-                sh 'node --check popular_banco.js && echo "✅ popular_banco.js válido"'
+                sh 'node --check popular_banco.js && echo "popular_banco.js valido"'
             }
         }
 
-        stage('Instalar dependências') {
+        stage('Instalar dependencias') {
             steps {
                 sh 'npm ci --only=production'
                 sh 'npm ci --save-dev jest@^29.7.0'
             }
         }
 
-        stage('Rodar testes unitários com Jest') {
+        stage('Rodar testes unitarios com Jest') {
             steps {
                 sh 'npm test -- --runInBand --forceExit'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                sh 'node popular_banco.js'
+                echo 'Banco de dados populado com sucesso!'
             }
         }
     }
@@ -71,10 +78,10 @@ pipeline {
             sh 'docker rm mysql-test || true'
         }
         success {
-            echo '✅ Testes do banco de dados concluídos com sucesso!'
+            echo 'Testes e deploy do banco concluidos com sucesso!'
         }
         failure {
-            echo '❌ Algo falhou. Verifique os logs acima.'
+            echo 'Algum passo falhou. Verifique os logs acima.'
         }
     }
 }
