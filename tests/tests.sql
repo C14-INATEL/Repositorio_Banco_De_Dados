@@ -1,3 +1,5 @@
+SET FOREIGN_KEY_CHECKS = 0;
+
 -- TESTE: verificar status padrão
 SELECT id, status
 FROM entregas;
@@ -141,3 +143,5 @@ FROM lojas
 WHERE usuario_id = 3;
 
 ROLLBACK;
+
+SET FOREIGN_KEY_CHECKS = 1;
