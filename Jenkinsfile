@@ -69,7 +69,11 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                sh 'node popular_banco.js'
+                sh '''
+                    MYSQL_HOST=$(docker inspect -f "{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}" mysql-test)
+                    export DB_HOST=$MYSQL_HOST
+                    node popular_banco.js
+                '''
                 echo 'Banco de dados populado com sucesso!'
             }
         }
