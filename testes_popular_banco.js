@@ -529,7 +529,7 @@ describe('Suite de Testes: popular_banco.js', () => {
 
       expect(rows.length).toBe(1)
       expect(rows[0].total_entregas).toBe(3)
-      expect(rows[0].custo_total).toBe(150)
+      expect(Number(rows[0].custo_total)).toBe(150)
       expect(rows[0].custo_medio).toBe(50)
     })
   })
@@ -731,8 +731,8 @@ describe('Suite de Testes: popular_banco.js', () => {
         FROM entregas e
       `)
 
-      expect(rows[0].total).toBe(rows[0].com_loja)
-      expect(rows[0].total).toBe(rows[0].com_regiao)
+      expect(String(rows[0].total)).toBe(String(rows[0].com_loja))
+      expect(String(rows[0].total)).toBe(String(rows[0].com_regiao))
     })
 
     test('Validar distribuição de entregas por status', async () => {
