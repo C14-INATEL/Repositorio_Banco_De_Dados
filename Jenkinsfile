@@ -53,8 +53,7 @@ pipeline {
 
         stage('Instalar dependencias') {
             steps {
-                sh 'npm ci --only=production'
-                sh 'npm ci --save-dev jest@^29.7.0'
+                sh 'npm install'
             }
         }
 
