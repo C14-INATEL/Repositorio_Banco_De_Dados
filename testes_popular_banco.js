@@ -1,6 +1,6 @@
 const mysql = require('mysql2/promise')
 const config = {
-  host: 'localhost',
+  host: process.env.DB_HOST || 'localhost',
   port: 3306,
   user: 'root',
   password: 'root',

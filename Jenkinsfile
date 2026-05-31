@@ -8,11 +8,6 @@ pipeline {
     environment {
         MYSQL_ROOT_PASSWORD = 'root'
         MYSQL_DATABASE = 'sistema_entregas'
-        DB_HOST = 'mysql-test'
-        DB_PORT = '3306'
-        DB_USER = 'root'
-        DB_PASSWORD = 'root'
-        DB_NAME = 'sistema_entregas'
     }
 
     stages {
@@ -26,7 +21,7 @@ pipeline {
             steps {
                 sh '''
                     docker run -d --name mysql-test \
-                        --network host \
+                        --network bridge \
                         -e MYSQL_ROOT_PASSWORD=root \
                         -e MYSQL_DATABASE=sistema_entregas \
                         -e MYSQL_ROOT_HOST=% \
@@ -64,7 +59,11 @@ pipeline {
 
         stage('Rodar testes unitarios com Jest') {
             steps {
-                sh 'npm test -- --runInBand --forceExit'
+                sh '''
+                    MYSQL_HOST=$(docker inspect -f "{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}" mysql-test)
+                    export DB_HOST=$MYSQL_HOST
+                    npm test -- --runInBand --forceExit
+                '''
             }
         }
 
