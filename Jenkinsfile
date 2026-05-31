@@ -8,6 +8,11 @@ pipeline {
     environment {
         MYSQL_ROOT_PASSWORD = 'root'
         MYSQL_DATABASE = 'sistema_entregas'
+        DB_HOST = 'mysql-test'
+        DB_PORT = '3306'
+        DB_USER = 'root'
+        DB_PASSWORD = 'root'
+        DB_NAME = 'sistema_entregas'
     }
 
     stages {
@@ -21,10 +26,10 @@ pipeline {
             steps {
                 sh '''
                     docker run -d --name mysql-test \
+                        --network host \
                         -e MYSQL_ROOT_PASSWORD=root \
                         -e MYSQL_DATABASE=sistema_entregas \
                         -e MYSQL_ROOT_HOST=% \
-                        -p 3307:3306 \
                         mysql:8.0 --default-authentication-plugin=mysql_native_password
                     echo "Aguardando MySQL iniciar..."
                     sleep 90
