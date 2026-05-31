@@ -530,7 +530,7 @@ describe('Suite de Testes: popular_banco.js', () => {
       expect(rows.length).toBe(1)
       expect(rows[0].total_entregas).toBe(3)
       expect(Number(rows[0].custo_total)).toBe(150)
-      expect(rows[0].custo_medio).toBe(50)
+      expect(Number(rows[0].custo_medio)).toBe(50)
     })
   })
 
