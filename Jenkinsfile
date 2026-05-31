@@ -41,7 +41,7 @@ pipeline {
         stage('Rodar testes SQL') {
             steps {
                 sh 'docker exec -i mysql-test mysql -h 127.0.0.1 -uroot -proot sistema_entregas < tests/tests.sql'
-                sh 'docker exec -i mysql-test mysql -h 127.0.0.1 -uroot -proot sistema_entregas < tests/testes.sql'
+                sh 'docker exec -i mysql-test mysql --force -h 127.0.0.1 -uroot -proot sistema_entregas < tests/testes.sql'
             }
         }
 
