@@ -74,3 +74,37 @@ ON entregas(status);
 
 CREATE INDEX idx_entregas_prioridade
 ON entregas(prioridade);
+
+-- ============================================
+-- DADOS DE TESTE
+-- ============================================
+
+-- INSERIR REGIOES
+INSERT INTO regioes (nome, custo_base) VALUES
+('Sul', 25.00),
+('Sudeste', 30.00),
+('Norte', 35.00),
+('Centro-Oeste', 28.00),
+('Nordeste', 32.00);
+
+-- INSERIR USUARIOS DE TESTE
+INSERT INTO usuarios (nome, email, senha, tipo, ativo) VALUES
+('Administrador', 'admin@email.com', '1234', 'admin', TRUE),
+('João Silva', 'joao@email.com', '1234', 'operador', TRUE),
+('Maria Santos', 'maria@email.com', '1234', 'operador', TRUE),
+('Pedro Loja', 'pedro@email.com', '1234', 'lojista', TRUE),
+('Ana Loja', 'ana@email.com', '1234', 'lojista', TRUE);
+
+-- INSERIR LOJAS
+INSERT INTO lojas (nome, endereco, telefone, usuario_id) VALUES
+('Loja A', 'Rua Principal 123', '11999999999', 4),
+('Loja B', 'Avenida Central 456', '21988888888', 5);
+
+-- INSERIR ENTREGAS DE TESTE
+INSERT INTO entregas (descricao, status, prioridade, custo, loja_id, regiao_id) VALUES
+('Entrega 1', 'criado', 'media', 50.00, 1, 1),
+('Entrega 2', 'andamento', 'alta', 75.00, 1, 2),
+('Entrega 3', 'enviado', 'urgente', 100.00, 2, 3),
+('Entrega 4', 'entregue', 'media', 45.00, 2, 1),
+('Entrega 5', 'entregue', 'baixa', 35.00, 1, 2),
+('Entrega 6', 'andamento', 'alta', 80.00, 2, 3);
