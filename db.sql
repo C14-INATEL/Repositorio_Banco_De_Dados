@@ -1,21 +1,19 @@
 CREATE DATABASE IF NOT EXISTS sistema_entregas;
 USE sistema_entregas;
 
--- LIMPAR TABELAS
-DROP TABLE IF EXISTS entregas;
-DROP TABLE IF EXISTS lojas;
-DROP TABLE IF EXISTS usuarios;
-DROP TABLE IF EXISTS regioes;
+-- Schema idempotente: nada de DROP — tabelas são preservadas entre boots.
+-- Indexes vão dentro de CREATE TABLE para também serem idempotentes
+-- (MySQL não suporta CREATE INDEX IF NOT EXISTS em versões mais antigas).
 
 -- REGIOES
-CREATE TABLE regioes (
+CREATE TABLE IF NOT EXISTS regioes (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(50) NOT NULL CHECK (CHAR_LENGTH(nome) > 0),
     custo_base DECIMAL(10,2) NOT NULL CHECK (custo_base >= 0)
 );
 
 -- USUARIOS
-CREATE TABLE usuarios (
+CREATE TABLE IF NOT EXISTS usuarios (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL CHECK (CHAR_LENGTH(email) > 0),
@@ -26,7 +24,7 @@ CREATE TABLE usuarios (
 );
 
 -- LOJAS
-CREATE TABLE lojas (
+CREATE TABLE IF NOT EXISTS lojas (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(100) NOT NULL CHECK (CHAR_LENGTH(nome) > 0),
     endereco VARCHAR(255),
@@ -39,7 +37,7 @@ CREATE TABLE lojas (
 );
 
 -- ENTREGAS
-CREATE TABLE entregas (
+CREATE TABLE IF NOT EXISTS entregas (
     id INT AUTO_INCREMENT PRIMARY KEY,
     descricao VARCHAR(255),
     status ENUM(
@@ -65,46 +63,12 @@ CREATE TABLE entregas (
         REFERENCES lojas(id)
         ON DELETE CASCADE,
     FOREIGN KEY (regiao_id)
-        REFERENCES regioes(id)
+        REFERENCES regioes(id),
+    INDEX idx_entregas_status (status),
+    INDEX idx_entregas_prioridade (prioridade)
 );
 
--- INDICES
-CREATE INDEX idx_entregas_status
-ON entregas(status);
-
-CREATE INDEX idx_entregas_prioridade
-ON entregas(prioridade);
-
--- ============================================
--- DADOS DE TESTE
--- ============================================
-
--- INSERIR REGIOES
-INSERT INTO regioes (nome, custo_base) VALUES
-('Sul', 25.00),
-('Sudeste', 30.00),
-('Norte', 35.00),
-('Centro-Oeste', 28.00),
-('Nordeste', 32.00);
-
--- INSERIR USUARIOS DE TESTE
-INSERT INTO usuarios (nome, email, senha, tipo, ativo) VALUES
-('Administrador', 'admin@email.com', '1234', 'admin', TRUE),
-('João Silva', 'joao@email.com', '1234', 'operador', TRUE),
-('Maria Santos', 'maria@email.com', '1234', 'operador', TRUE),
-('Pedro Loja', 'pedro@email.com', '1234', 'lojista', TRUE),
-('Ana Loja', 'ana@email.com', '1234', 'lojista', TRUE);
-
--- INSERIR LOJAS
-INSERT INTO lojas (nome, endereco, telefone, usuario_id) VALUES
-('Loja A', 'Rua Principal 123', '11999999999', 4),
-('Loja B', 'Avenida Central 456', '21988888888', 5);
-
--- INSERIR ENTREGAS DE TESTE
-INSERT INTO entregas (descricao, status, prioridade, custo, loja_id, regiao_id) VALUES
-('Entrega 1', 'criado', 'media', 50.00, 1, 1),
-('Entrega 2', 'andamento', 'alta', 75.00, 1, 2),
-('Entrega 3', 'enviado', 'urgente', 100.00, 2, 3),
-('Entrega 4', 'entregue', 'media', 45.00, 2, 1),
-('Entrega 5', 'entregue', 'baixa', 35.00, 1, 2),
-('Entrega 6', 'andamento', 'alta', 80.00, 2, 3);
+-- Observação: nenhum dado de seed neste arquivo.
+-- O seed é feito por popular_banco.js, que só popula quando o banco está
+-- vazio (preservando dados criados via aplicação entre boots).
+-- Use `npm run seed:force` (no repo do BD) para resetar e re-semear.

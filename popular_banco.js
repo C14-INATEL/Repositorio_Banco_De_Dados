@@ -1,11 +1,16 @@
 const mysql = require('mysql2/promise')
+const fs = require('node:fs/promises')
+const path = require('node:path')
 
+// Conexão SEM database — o schema é (re)criado por db.sql, que faz
+// CREATE DATABASE IF NOT EXISTS + USE. Isso permite rodar mesmo num MySQL
+// "novo" (sem o database) ou "velho" (com schema desatualizado).
 const config = {
   host: process.env.DB_HOST || 'localhost',
-  port: 3306,
-  user: 'root',
-  password: 'root',
-  database: 'sistema_entregas',
+  port: Number(process.env.DB_PORT) || 3306,
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASS || 'root',
+  multipleStatements: true,
 }
 
 const usuarios = [
@@ -52,22 +57,62 @@ const entregas = [
   { descricao: 'Monitor 4K para cliente em Curitiba',             lojaNome: 'Tecno Shop', regiaoNome: 'Sul',       prioridade: 'urgente', custo: 95.00, status: 'enviado' },
 ]
 
-async function popular() {
-  const conn = await mysql.createConnection(config)
+async function conectarComRetry(tentativasMax = 30, intervaloMs = 2000) {
+  let ultimoErro
+  for (let tentativa = 1; tentativa <= tentativasMax; tentativa++) {
+    try {
+      return await mysql.createConnection(config)
+    } catch (err) {
+      ultimoErro = err
+      console.log(`[duck] Aguardando MySQL (${tentativa}/${tentativasMax})... ${err.code || err.message}`)
+      await new Promise(r => setTimeout(r, intervaloMs))
+    }
+  }
+  throw ultimoErro
+}
+
+async function aplicarSchema(conn) {
+  const sqlPath = path.join(__dirname, 'db.sql')
+  const sql = await fs.readFile(sqlPath, 'utf8')
+  // db.sql faz DROP TABLE IF EXISTS + CREATE TABLE em todas as tabelas,
+  // garantindo schema fresco e tabelas vazias antes dos inserts abaixo.
+  await conn.query(sql)
+  console.log('[duck] Schema aplicado a partir de db.sql.')
+}
+
+async function bancoJaPopulado(conn) {
+  const [rows] = await conn.query('SELECT COUNT(*) AS total FROM usuarios')
+  return rows[0].total > 0
+}
+
+async function limparTabelas(conn) {
+  await conn.execute('SET FOREIGN_KEY_CHECKS = 0')
+  await conn.execute('TRUNCATE TABLE entregas')
+  await conn.execute('TRUNCATE TABLE lojas')
+  await conn.execute('TRUNCATE TABLE regioes')
+  await conn.execute('TRUNCATE TABLE usuarios')
+  await conn.execute('SET FOREIGN_KEY_CHECKS = 1')
+}
+
+async function popular({ force = false } = {}) {
+  const conn = await conectarComRetry()
+  console.log('[duck] Conectado ao MySQL.')
 
   try {
-    console.log('[duck] Conectado ao banco de dados.')
+    await aplicarSchema(conn)
 
-    // Desativa FK para poder limpar as tabelas sem erro de constraint
-    await conn.execute('SET FOREIGN_KEY_CHECKS = 0')
-    await conn.execute('TRUNCATE TABLE entregas')
-    await conn.execute('TRUNCATE TABLE lojas')
-    await conn.execute('TRUNCATE TABLE regioes')
-    await conn.execute('TRUNCATE TABLE usuarios')
-    await conn.execute('SET FOREIGN_KEY_CHECKS = 1')
-    console.log('[duck] Tabelas limpas.')
+    // Se o banco já tem dados e não foi pedido --force, preserva o que está lá.
+    // Isso permite que cadastros feitos pela aplicação persistam entre boots.
+    if (await bancoJaPopulado(conn)) {
+      if (!force) {
+        console.log('[duck] Banco já contém dados — seed pulado para preservar o que foi criado pela aplicação.')
+        console.log('[duck] Para resetar e re-semear: npm run seed:force')
+        return
+      }
+      console.log('[duck] --force: limpando tabelas antes de re-semear...')
+      await limparTabelas(conn)
+    }
 
-    // Insere usuários e guarda os IDs gerados pelo banco
     const ids = {}
     for (const u of usuarios) {
       const [result] = await conn.execute(
@@ -78,7 +123,6 @@ async function popular() {
     }
     console.log(`[duck] ${usuarios.length} usuários inseridos.`)
 
-    // Insere lojas vinculadas aos seus respectivos usuários lojistas
     const lojaIds = {}
     for (const l of lojas) {
       const [result] = await conn.execute(
@@ -108,20 +152,18 @@ async function popular() {
     console.log(`[duck] ${entregas.length} entregas inseridas.`)
 
     console.log('\n[duck] Banco populado com sucesso!')
-    console.log('\nCredenciais de acesso:')
-    console.log('  lucas.martins@duck.com   | 123456 | admin')
-    console.log('  fernanda.lima@duck.com   | 123456 | operador')
-    console.log('  diego.rodrigues@duck.com | 123456 | operador')
-    console.log('  ana.santos@email.com     | 123456 | lojista')
-    console.log('  roberto.campos@email.com | 123456 | lojista')
-    console.log('  mariana.figueiredo@email.com | 123456 | lojista')
-    console.log('  carlos.nogueira@email.com   | 123456 | lojista')
+    console.log('\nCredenciais de acesso (senha 123456 para todos):')
+    for (const u of usuarios) {
+      console.log(`  ${u.email.padEnd(32)} | ${u.tipo}`)
+    }
   } finally {
     await conn.end()
   }
 }
 
-popular().catch(err => {
+const force = process.argv.includes('--force') || process.env.SEED_FORCE === '1'
+
+popular({ force }).catch(err => {
   console.error('[duck] Erro ao popular o banco:', err.message)
   process.exit(1)
 })
