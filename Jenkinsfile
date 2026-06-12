@@ -68,6 +68,13 @@ pipeline {
             }
         }
 
+        stage('Gerar relatório de testes do BD') {
+            steps {
+                sh 'npm run report:db'
+                archiveArtifacts artifacts: 'reports/db-tests-report.xml', fingerprint: true
+            }
+        }
+
         stage('Deploy') {
             steps {
                 sh '''

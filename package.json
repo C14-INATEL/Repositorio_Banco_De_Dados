@@ -11,7 +11,8 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "seed": "node popular_banco.js",
-    "seed:force": "node popular_banco.js --force"
+    "seed:force": "node popular_banco.js --force",
+    "report:db": "node scripts/generate_db_test_report.js"
   },
   "repository": {
     "type": "git",
